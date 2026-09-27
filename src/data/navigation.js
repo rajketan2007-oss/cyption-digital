@@ -14,7 +14,7 @@ export const mobileNavLinks = [
   { href: '#case-studies', label: 'Case Studies' },
   { href: '#services', label: 'Services' },
   { href: '#growth-system', label: 'Growth System™' },
-  { href: '#portfolio', label: 'Portfolio' },
+  // { href: '#portfolio', label: 'Portfolio' },
   { href: '#audit', label: 'Free Growth Audit ↗', isHighlight: true },
   { href: '#contact', label: 'Contact Us' }
 ];
@@ -25,7 +25,7 @@ export const footerExploreLinks = [
   { href: '#services', label: 'Services' },
   { href: '#case-studies', label: 'Case Studies' },
   { href: '#growth-system', label: 'Growth System™' },
-  { href: '#portfolio', label: 'Portfolio' },
+  // { href: '#portfolio', label: 'Portfolio' },
   { href: '#problem', label: 'Insights' },
   { href: '#audit', label: 'Free Growth Audit' },
   { href: '#contact', label: 'Contact' }

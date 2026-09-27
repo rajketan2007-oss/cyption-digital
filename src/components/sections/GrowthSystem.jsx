@@ -1,8 +1,25 @@
 import React, { useState } from 'react';
 import { growthSteps } from '../../data';
+import { useSmoothCardsSlider } from '../../hooks';
 
 export default function GrowthSystem() {
   const [activeStep, setActiveStep] = useState(0);
+
+  const {
+    railRef,
+    scrollToCard,
+  } = useSmoothCardsSlider({
+    cardSelector: '.system-card',
+    totalItems: growthSteps.length,
+    initialIndex: 0,
+    enableMouseDrag: true,
+    onIndexChange: (idx) => setActiveStep(idx),
+  });
+
+  const handleStepClick = (idx) => {
+    setActiveStep(idx);
+    scrollToCard(idx);
+  };
 
   return (
     <section className="growth-system section" id="growth-system">
@@ -33,7 +50,7 @@ export default function GrowthSystem() {
                 data-step-target={idx}
                 role="tab"
                 aria-selected={activeStep === idx}
-                onClick={() => setActiveStep(idx)}
+                onClick={() => handleStepClick(idx)}
               >
                 <span className="step-num-pill">{s.num}</span>
                 <strong>{s.shortName}</strong>
@@ -46,14 +63,18 @@ export default function GrowthSystem() {
         </div>
       </div>
 
-      {/* 6 Steps Interactive Cards Grid */}
-      <div className="system-cards-grid">
+      <div className="mobile-swipe-hint">
+        <span>⟷</span> Swipe steps horizontally
+      </div>
+
+      {/* 6 Steps Interactive Cards Grid / Track */}
+      <div className="system-cards-grid" ref={railRef}>
         {growthSteps.map((s, idx) => (
           <article
             className={`system-card ${activeStep === idx ? 'active' : ''}`}
             data-step-index={idx}
             key={s.num}
-            onClick={() => setActiveStep(idx)}
+            onClick={() => handleStepClick(idx)}
           >
             <div className="sys-top">
               <span className="sys-badge">{s.phase}</span>
@@ -65,6 +86,19 @@ export default function GrowthSystem() {
               <strong>Output:</strong> {s.output}
             </div>
           </article>
+        ))}
+      </div>
+
+      {/* Mobile Dots Indicator */}
+      <div className="mobile-dots-indicator" aria-label="Methodology step pagination">
+        {growthSteps.map((_, i) => (
+          <button
+            type="button"
+            className={`dot ${activeStep === i ? 'active' : ''}`}
+            key={i}
+            onClick={() => handleStepClick(i)}
+            aria-label={`Jump to step ${i + 1}`}
+          />
         ))}
       </div>
     </section>

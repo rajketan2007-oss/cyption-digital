@@ -73,7 +73,7 @@ export default function GrowthAudit() {
   return (
     <section className="growth-audit-section section" id="audit">
       <div className="section-label">
-        <span className="section-num">12</span>
+        <span className="section-num">11</span>
         <span className="slash">/</span>
         <span className="label-name">Audit</span>
         <span className="active-badge">[ Zero-Risk Diagnostic ]</span>

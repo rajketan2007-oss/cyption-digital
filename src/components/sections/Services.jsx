@@ -1,7 +1,18 @@
 import React from 'react';
 import { servicePillars } from '../../data';
+import { useSmoothCardsSlider } from '../../hooks';
 
 export default function Services() {
+  const {
+    railRef,
+    activeIndex,
+    scrollToCard,
+  } = useSmoothCardsSlider({
+    cardSelector: '.service-col',
+    totalItems: servicePillars.length,
+    enableMouseDrag: true,
+  });
+
   return (
     <section className="services-matrix section" id="services">
       <div className="section-label">
@@ -21,8 +32,12 @@ export default function Services() {
         </p>
       </div>
 
-      {/* 5 Columns Grid */}
-      <div className="services-columns-grid">
+      <div className="mobile-swipe-hint">
+        <span>⟷</span> Swipe pillars horizontally
+      </div>
+
+      {/* 5 Columns Grid / Track */}
+      <div className="services-columns-grid" ref={railRef}>
         {servicePillars.map((pillar) => (
           <div className="service-col" key={pillar.tag}>
             <div className="col-head">
@@ -41,6 +56,19 @@ export default function Services() {
               {pillar.linkText}
             </a>
           </div>
+        ))}
+      </div>
+
+      {/* Mobile Dots Indicator */}
+      <div className="mobile-dots-indicator" aria-label="Services pagination">
+        {servicePillars.map((_, i) => (
+          <button
+            type="button"
+            className={`dot ${activeIndex === i ? 'active' : ''}`}
+            key={i}
+            onClick={() => scrollToCard(i)}
+            aria-label={`Jump to service pillar ${i + 1}`}
+          />
         ))}
       </div>
     </section>

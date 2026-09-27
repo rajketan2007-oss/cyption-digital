@@ -6,7 +6,7 @@ export default function FinalCTA() {
     <section className="cta" id="contact">
       <div className="cta-spark" aria-hidden="true"></div>
       <p className="section-label">
-        <span className="section-num">14</span>
+        <span className="section-num">13</span>
         <span className="slash">/</span>
         <span className="label-name">Action</span>
         <span className="active-badge">[ Let's Build What's Next ]</span>

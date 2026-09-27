@@ -1,12 +1,23 @@
 import React from 'react';
 import { testimonials } from '../../data';
 import { AnimatedCounter } from '../common';
+import { useSmoothCardsSlider } from '../../hooks';
 
 export default function Testimonials() {
+  const {
+    railRef,
+    activeIndex,
+    scrollToCard,
+  } = useSmoothCardsSlider({
+    cardSelector: '.testi-card',
+    totalItems: testimonials.length,
+    enableMouseDrag: true,
+  });
+
   return (
     <section className="testimonials section" id="testimonials">
       <div className="section-label">
-        <span className="section-num">11</span>
+        <span className="section-num">10</span>
         <span className="slash">/</span>
         <span className="label-name">Validation</span>
         <span className="active-badge">[ Real Client Voices ]</span>
@@ -36,10 +47,14 @@ export default function Testimonials() {
         </div>
       </div>
 
-      {/* Testimonial Cards Grid */}
-      <div className="testi-grid">
-        {testimonials.map((t) => (
-          <article className="testi-card" key={t.author}>
+      <div className="mobile-swipe-hint">
+        <span>⟷</span> Swipe testimonials horizontally
+      </div>
+
+      {/* Testimonial Cards Grid / Track */}
+      <div className="testi-grid" ref={railRef}>
+        {testimonials.map((t, idx) => (
+          <article className={`testi-card ${activeIndex === idx ? 'in-view' : ''}`} key={t.author}>
             <div className="testi-stars">★★★★★</div>
             <blockquote className="testi-quote">{t.quote}</blockquote>
             <div className="testi-author">
@@ -50,6 +65,19 @@ export default function Testimonials() {
               </div>
             </div>
           </article>
+        ))}
+      </div>
+
+      {/* Mobile Dots Indicator */}
+      <div className="mobile-dots-indicator" aria-label="Testimonials pagination">
+        {testimonials.map((_, i) => (
+          <button
+            type="button"
+            className={`dot ${activeIndex === i ? 'active' : ''}`}
+            key={i}
+            onClick={() => scrollToCard(i)}
+            aria-label={`Jump to testimonial ${i + 1}`}
+          />
         ))}
       </div>
     </section>

@@ -13,7 +13,7 @@ export default function FAQ() {
       <div className="faq-top">
         <div>
           <div className="section-label">
-            <span className="section-num">13</span>
+            <span className="section-num">12</span>
             <span className="slash">/</span>
             <span className="label-name">Questions</span>
             <span className="active-badge">[ Clear Answers · 07 Queries ]</span>

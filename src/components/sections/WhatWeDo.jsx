@@ -1,100 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { Draggable } from 'gsap/Draggable';
+import React from 'react';
 import { capabilities } from '../../data';
-
-gsap.registerPlugin(Draggable);
+import { useSmoothCardsSlider } from '../../hooks';
 
 export default function WhatWeDo() {
-  const railRef = useRef(null);
-  const wrapRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const rail = railRef.current;
-    const wrap = wrapRef.current;
-    if (!rail || !wrap) return;
-
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-    const cards = rail.querySelectorAll('.feature-card');
-    const cardGap = isMobile ? 14 : 18;
-    const cardStep = () => (cards[0] ? cards[0].offsetWidth + cardGap : 340);
-    const maxX = () =>
-      Math.min(0, wrap.clientWidth - rail.scrollWidth - (isMobile ? 24 : window.innerWidth * 0.04));
-
-    const snapPoints = (endValue) => {
-      const step = cardStep();
-      const snapped = Math.round(endValue / step) * step;
-      return Math.max(maxX(), Math.min(0, snapped));
-    };
-
-    function updateCards() {
-      const wrapRect = wrap.getBoundingClientRect();
-      const wrapCenter = wrapRect.left + wrapRect.width / 2;
-      let closest = 0;
-      let best = Infinity;
-
-      cards.forEach((card, i) => {
-        const cardRect = card.getBoundingClientRect();
-        const cardCenter = cardRect.left + cardRect.width / 2;
-        const distance = Math.abs(cardCenter - wrapCenter);
-        if (distance < best) {
-          best = distance;
-          closest = i;
-        }
-
-        const distRatio = distance / (wrapRect.width / 2);
-        const cardScale = isMobile
-          ? Math.max(0.94, 1 - distRatio * 0.06)
-          : Math.max(0.9, 1 - distRatio * 0.12);
-        const cardOpacity = isMobile
-          ? Math.max(0.75, 1 - distRatio * 0.3)
-          : Math.max(0.55, 1 - distRatio * 0.5);
-        gsap.to(card, { scale: cardScale, opacity: cardOpacity, duration: 0.15, overwrite: 'auto' });
-      });
-
-      cards.forEach((card, i) => {
-        card.classList.toggle('in-view', i === closest);
-      });
-      setActiveIndex(closest);
-    }
-
-    const [draggable] = Draggable.create(rail, {
-      type: 'x',
-      bounds: () => ({ minX: maxX(), maxX: 0 }),
-      edgeResistance: 0.75,
-      allowNativeVerticalScrolling: true,
-      dragClickables: false,
-      snap: isMobile || isTablet ? { x: snapPoints } : false,
-      onDrag: updateCards,
-      onThrowUpdate: updateCards
-    });
-
-    updateCards();
-
-    return () => {
-      if (draggable) draggable.kill();
-    };
-  }, []);
-
-  const scrollToCard = (index) => {
-    const rail = railRef.current;
-    const wrap = wrapRef.current;
-    if (!rail || !wrap) return;
-
-    const cards = rail.querySelectorAll('.feature-card');
-    const cardGap = window.innerWidth < 768 ? 14 : 18;
-    const cardStep = cards[0] ? cards[0].offsetWidth + cardGap : 340;
-    const maxX = Math.min(
-      0,
-      wrap.clientWidth - rail.scrollWidth - (window.innerWidth < 768 ? 24 : window.innerWidth * 0.04)
-    );
-    const targetX = Math.max(maxX, Math.min(0, -index * cardStep));
-
-    gsap.to(rail, { x: targetX, duration: 0.65, ease: 'power3.out' });
-    setActiveIndex(index);
-  };
+  const {
+    railRef,
+    activeIndex,
+    scrollToCard,
+    scrollPrev,
+    scrollNext,
+    canScrollPrev,
+    canScrollNext,
+  } = useSmoothCardsSlider({
+    cardSelector: '.feature-card',
+    totalItems: capabilities.length,
+    enableMouseDrag: true,
+  });
 
   return (
     <section className="capabilities section" id="capabilities">
@@ -122,13 +43,45 @@ export default function WhatWeDo() {
       </div>
 
       {/* 6 Interactive Hover Cards Rail */}
-      <div className="rail-wrap" ref={wrapRef}>
-        <div className="drag-hint">
-          Drag or swipe to explore capabilities <span>⟷</span>
+      <div className="rail-wrap">
+        <div className="rail-top-bar">
+          <div className="drag-hint">
+            <span>⟷</span> Swipe or drag to explore capabilities
+          </div>
+          <div className="rail-counter-nav">
+            <span className="rail-count-badge">
+              0{activeIndex + 1} <span className="slash">/</span> 0{capabilities.length}
+            </span>
+            <div className="rail-nav-arrows">
+              <button
+                type="button"
+                className={`rail-arrow-btn prev ${!canScrollPrev ? 'disabled' : ''}`}
+                onClick={scrollPrev}
+                aria-label="Previous capability card"
+                disabled={!canScrollPrev}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className={`rail-arrow-btn next ${!canScrollNext ? 'disabled' : ''}`}
+                onClick={scrollNext}
+                aria-label="Next capability card"
+                disabled={!canScrollNext}
+              >
+                →
+              </button>
+            </div>
+          </div>
         </div>
+
         <div className="feature-rail" id="capabilities-rail" ref={railRef}>
-          {capabilities.map((c) => (
-            <article className={`feature-card ${c.theme}`} key={c.title}>
+          {capabilities.map((c, i) => (
+            <article
+              className={`feature-card ${c.theme} ${activeIndex === i ? 'in-view' : ''}`}
+              key={c.title}
+              onClick={() => scrollToCard(i)}
+            >
               <div className="card-top">
                 <span>{c.num}</span>
                 <span className="card-tag">{c.tag}</span>
@@ -146,13 +99,15 @@ export default function WhatWeDo() {
           ))}
         </div>
 
-        <div className="rail-pagination" aria-hidden="true">
+        <div className="rail-pagination" aria-label="Capabilities card pagination">
           {capabilities.map((_, i) => (
-            <span
+            <button
+              type="button"
               className={`dot ${activeIndex === i ? 'active' : ''}`}
               key={i}
               onClick={() => scrollToCard(i)}
-            ></span>
+              aria-label={`Jump to slide ${i + 1}`}
+            />
           ))}
         </div>
 

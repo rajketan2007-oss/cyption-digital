@@ -74,6 +74,11 @@ export default function Navbar() {
         ease: 'power3.inOut'
       });
       gsap.fromTo(
+        '.mobile-menu-close-corner',
+        { scale: 0.6, opacity: 0, rotate: -90 },
+        { scale: 1, opacity: 1, rotate: 0, duration: 0.35, delay: 0.1, ease: 'back.out(1.7)' }
+      );
+      gsap.fromTo(
         '.mobile-menu a',
         { y: 28, opacity: 0 },
         { y: 0, opacity: 1, stagger: 0.04, delay: 0.15, duration: 0.4, ease: 'power2.out' }
@@ -93,6 +98,17 @@ export default function Navbar() {
         }
       });
     }
+  }, [isMenuOpen]);
+
+  // Handle escape key to close menu
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isMenuOpen]);
 
   const closeMenu = () => setIsMenuOpen(false);
@@ -158,6 +174,30 @@ export default function Navbar() {
         ref={mobileMenuRef}
         aria-hidden={!isMenuOpen}
       >
+        {/* Prominent Fixed Top Right Cross / Cut Button */}
+        <button
+          type="button"
+          className="mobile-menu-close-corner"
+          onClick={closeMenu}
+          aria-label="Close navigation menu"
+          title="Close navigation menu"
+        >
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
         <div className="mobile-menu-inner">
           <p>Menu / Growth Navigation</p>
           {mobileNavLinks.map((link) => (

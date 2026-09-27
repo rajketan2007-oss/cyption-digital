@@ -350,7 +350,7 @@ body.cursor-badge-active .cursor-dot {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-.menu-toggle, .mobile-menu {
+.menu-toggle, .mobile-menu, .mobile-menu-close-corner {
   display: none;
 }
 
@@ -1091,35 +1091,120 @@ body.cursor-badge-active .cursor-dot {
 }
 
 .rail-wrap {
-  margin: 70px -4vw 0;
-  padding: 0 0 40px;
-  overflow: hidden;
+  margin: 50px -4vw 0;
+  padding: 0 0 35px;
+  position: relative;
+}
+
+.rail-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4vw;
+  margin-bottom: 20px;
+  gap: 16px;
 }
 
 .drag-hint {
-  margin: 0 4vw 20px;
-  font: 10px var(--mono);
+  font: 11px/1.2 var(--mono);
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-subtle);
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .drag-hint span {
   color: var(--lime);
   font-size: 18px;
-  margin-left: 5px;
+  display: inline-block;
+  animation: pulse-horizontal 2s ease-in-out infinite;
+}
+
+@keyframes pulse-horizontal {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+.rail-counter-nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.rail-count-badge {
+  font: 600 12px var(--mono);
+  letter-spacing: 0.05em;
+  color: var(--paper);
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 6px 12px;
+  border-radius: 100px;
+}
+
+.rail-nav-arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.rail-arrow-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-card);
+  color: var(--paper);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rail-arrow-btn:hover:not(:disabled) {
+  border-color: var(--lime);
+  background: var(--lime);
+  color: #10120e;
+  transform: scale(1.06);
+}
+
+.rail-arrow-btn:disabled,
+.rail-arrow-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .feature-rail {
   display: flex;
-  gap: 18px;
-  width: max-content;
-  padding: 0 4vw;
+  gap: 20px;
+  width: 100%;
+  padding: 16px 4vw 36px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-y pinch-zoom;
   cursor: grab;
 }
 
+.feature-rail:active {
+  cursor: grabbing;
+}
+
+.feature-rail::-webkit-scrollbar {
+  display: none;
+}
+
 .feature-card {
-  width: min(340px, 80vw);
+  flex: 0 0 min(340px, 80vw);
+  scroll-snap-align: center;
+  scroll-snap-stop: normal;
   min-height: 440px;
   padding: 28px;
   display: flex;
@@ -1127,11 +1212,12 @@ body.cursor-badge-active .cursor-dot {
   position: relative;
   overflow: hidden;
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 8px;
   will-change: transform, box-shadow, border-color;
   transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
               box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-              border-color 0.35s ease;
+              border-color 0.35s ease,
+              opacity 0.35s ease;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1197,7 +1283,7 @@ body.cursor-badge-active .cursor-dot {
 
 .feature-card:hover, .feature-card.in-view {
   border-color: var(--lime);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 20px rgba(216, 255, 62, 0.18);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), 0 0 24px rgba(216, 255, 62, 0.2);
 }
 
 .feature-card:hover .card-mark {
@@ -1218,26 +1304,35 @@ body.cursor-badge-active .cursor-dot {
   justify-content: center;
   align-items: center;
   gap: 8px;
-  margin-top: 30px;
+  margin-top: 26px;
 }
 
 .rail-pagination .dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: rgba(248, 248, 242, 0.2);
-  transition: width 0.3s ease, background 0.3s ease, border-radius 0.3s ease;
+  border: 0;
+  padding: 0;
+  background: rgba(248, 248, 242, 0.25);
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+              background 0.35s ease,
+              border-radius 0.35s ease;
   cursor: pointer;
 }
 
+.rail-pagination .dot:hover {
+  background: rgba(216, 255, 62, 0.6);
+}
+
 .rail-pagination .dot.active {
-  width: 24px;
+  width: 26px;
   border-radius: 4px;
   background: var(--lime);
+  box-shadow: 0 0 10px rgba(216, 255, 62, 0.5);
 }
 
 .rail-action-row {
-  margin-top: 35px;
+  margin-top: 30px;
   display: flex;
   justify-content: center;
 }
@@ -3170,7 +3265,7 @@ footer {
   .mobile-menu {
     display: block;
     position: fixed;
-    z-index: 55;
+    z-index: 100;
     inset: 0;
     background: var(--lime);
     clip-path: inset(0 0 100% 0);
@@ -3179,9 +3274,46 @@ footer {
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Dedicated Top-Right Cross / Cut Button for Mobile Phone */
+  .mobile-menu-close-corner {
+    position: fixed;
+    top: 18px;
+    right: 5vw;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #10120e;
+    color: var(--lime);
+    border: 2px solid rgba(16, 18, 14, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 120;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.2s ease, color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-menu-close-corner:hover {
+    transform: scale(1.1) rotate(90deg);
+    background: #000000;
+    color: #ffffff;
+  }
+
+  .mobile-menu-close-corner:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-menu-close-corner svg {
+    display: block;
+    stroke: currentColor;
+    stroke-width: 2.5;
+  }
+
   .mobile-menu-inner {
     min-height: 100svh;
-    padding: 95px 7vw 36px;
+    padding: 85px 7vw 36px;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -3511,6 +3643,167 @@ footer {
     scrollbar-color: var(--line-strong) transparent;
   }
 }
+
+/* ==========================================================================
+   Ultra-Smooth Hardware-Accelerated Card Sliders (Mobile & Touch Devices)
+   ========================================================================== */
+
+/* Mobile Hints & Dots */
+.mobile-swipe-hint {
+  display: none;
+  font: 10px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+  margin: 0 0 16px;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-swipe-hint span {
+  color: var(--lime);
+  font-size: 15px;
+  display: inline-block;
+  animation: pulse-horizontal 2s ease-in-out infinite;
+}
+
+.mobile-dots-indicator {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.mobile-dots-indicator .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  background: rgba(248, 248, 242, 0.22);
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+              background 0.35s ease,
+              border-radius 0.35s ease;
+  cursor: pointer;
+}
+
+.mobile-dots-indicator .dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--lime);
+  box-shadow: 0 0 10px rgba(216, 255, 62, 0.45);
+}
+
+@media (max-width: 768px) {
+  .mobile-swipe-hint {
+    display: flex;
+  }
+
+  .mobile-dots-indicator {
+    display: flex;
+  }
+
+  /* Smooth slider tracks on mobile */
+  .services-columns-grid,
+  .system-cards-grid,
+  .stages-grid,
+  .testi-grid,
+  .problem-grid,
+  .differentiators-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory !important;
+    scroll-behavior: smooth !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-x: contain !important;
+    scrollbar-width: none !important;
+    touch-action: pan-y pinch-zoom !important;
+    gap: 16px !important;
+    padding: 10px 5vw 24px !important;
+    margin-left: -5vw !important;
+    margin-right: -5vw !important;
+    width: calc(100% + 10vw) !important;
+    cursor: grab;
+  }
+
+  .services-columns-grid::-webkit-scrollbar,
+  .system-cards-grid::-webkit-scrollbar,
+  .stages-grid::-webkit-scrollbar,
+  .testi-grid::-webkit-scrollbar,
+  .problem-grid::-webkit-scrollbar,
+  .differentiators-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Cards in slider tracks */
+  .service-col,
+  .system-card,
+  .stage-card,
+  .testi-card,
+  .problem-card,
+  .diff-card {
+    flex: 0 0 min(290px, 78vw) !important;
+    scroll-snap-align: center !important;
+    scroll-snap-stop: normal !important;
+    margin: 0 !important;
+    opacity: 0.72;
+    transform: scale(0.96);
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 0.3s ease,
+                box-shadow 0.35s ease,
+                opacity 0.35s ease !important;
+  }
+
+  .service-col.in-view,
+  .service-col:hover,
+  .system-card.in-view,
+  .system-card.active,
+  .stage-card.in-view,
+  .stage-card.featured-stage,
+  .testi-card.in-view,
+  .problem-card.in-view,
+  .diff-card.in-view {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    border-color: var(--lime) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 20px rgba(216, 255, 62, 0.16) !important;
+  }
+
+  .feature-rail {
+    gap: 14px !important;
+    padding: 10px 5vw 26px !important;
+  }
+
+  .feature-card {
+    flex: 0 0 min(290px, 78vw) !important;
+    min-height: 420px !important;
+    padding: 24px !important;
+    opacity: 0.72;
+    transform: scale(0.96);
+  }
+
+  .feature-card.in-view {
+    opacity: 1;
+    transform: scale(1);
+    border-color: var(--lime);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(216, 255, 62, 0.2);
+  }
+
+  .rail-top-bar {
+    padding: 0;
+    margin-bottom: 12px;
+  }
+
+  .rail-wrap {
+    margin-top: 36px;
+    padding-bottom: 20px;
+  }
+}
+
 
 /* ==========================================================================
    Reduced Motion

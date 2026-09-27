@@ -1,7 +1,18 @@
 import React from 'react';
 import { differentiators, comparisonPoints } from '../../data';
+import { useSmoothCardsSlider } from '../../hooks';
 
 export default function WhyCyption() {
+  const {
+    railRef,
+    activeIndex,
+    scrollToCard,
+  } = useSmoothCardsSlider({
+    cardSelector: '.diff-card',
+    totalItems: differentiators.length,
+    enableMouseDrag: true,
+  });
+
   return (
     <section className="why-cyption section" id="why-cyption">
       <div className="section-label">
@@ -21,14 +32,31 @@ export default function WhyCyption() {
         </p>
       </div>
 
-      {/* 5 Differentiators Cards */}
-      <div className="differentiators-grid">
-        {differentiators.map((diff) => (
-          <div className="diff-card" key={diff.num}>
+      <div className="mobile-swipe-hint">
+        <span>⟷</span> Swipe differentiators horizontally
+      </div>
+
+      {/* 5 Differentiators Cards Grid / Track */}
+      <div className="differentiators-grid" ref={railRef}>
+        {differentiators.map((diff, idx) => (
+          <div className={`diff-card ${activeIndex === idx ? 'in-view' : ''}`} key={diff.num}>
             <span className="diff-num">{diff.num}</span>
             <h3>{diff.title}</h3>
             <p>{diff.desc}</p>
           </div>
+        ))}
+      </div>
+
+      {/* Mobile Dots Indicator */}
+      <div className="mobile-dots-indicator" aria-label="Differentiators pagination">
+        {differentiators.map((_, i) => (
+          <button
+            type="button"
+            className={`dot ${activeIndex === i ? 'active' : ''}`}
+            key={i}
+            onClick={() => scrollToCard(i)}
+            aria-label={`Jump to differentiator ${i + 1}`}
+          />
         ))}
       </div>
 

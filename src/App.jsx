@@ -297,7 +297,7 @@ export default function App() {
           <Services />
           <WhoWeWorkWith />
           <GrowthSystem />
-          <Portfolio />
+          {/* <Portfolio /> - Showcase section commented out */}
           <Testimonials />
           <GrowthAudit />
           <FAQ />

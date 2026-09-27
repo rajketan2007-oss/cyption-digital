@@ -1,7 +1,18 @@
 import React from 'react';
 import { stages } from '../../data';
+import { useSmoothCardsSlider } from '../../hooks';
 
 export default function WhoWeWorkWith() {
+  const {
+    railRef,
+    activeIndex,
+    scrollToCard,
+  } = useSmoothCardsSlider({
+    cardSelector: '.stage-card',
+    totalItems: stages.length,
+    enableMouseDrag: true,
+  });
+
   return (
     <section className="who-we-work-with section" id="who-we-work-with">
       <div className="section-label">
@@ -21,11 +32,15 @@ export default function WhoWeWorkWith() {
         </p>
       </div>
 
-      {/* 3 Stage Cards */}
-      <div className="stages-grid">
-        {stages.map((stage) => (
+      <div className="mobile-swipe-hint">
+        <span>⟷</span> Swipe stages horizontally
+      </div>
+
+      {/* 3 Stage Cards Grid / Track */}
+      <div className="stages-grid" ref={railRef}>
+        {stages.map((stage, idx) => (
           <article
-            className={`stage-card ${stage.isFeatured ? 'featured-stage' : ''}`}
+            className={`stage-card ${stage.isFeatured ? 'featured-stage' : ''} ${activeIndex === idx ? 'in-view' : ''}`}
             key={stage.num}
           >
             <div className="stage-top">
@@ -36,14 +51,14 @@ export default function WhoWeWorkWith() {
               <p className="stage-sub">{stage.subtitle}</p>
             </div>
             <div className="stage-flow-box">
-              {stage.flowPills.map((pill, idx) => (
+              {stage.flowPills.map((pill, pIdx) => (
                 <React.Fragment key={pill}>
                   <span
-                    className={`flow-pill ${idx === stage.flowPills.length - 1 ? 'flow-win' : ''}`}
+                    className={`flow-pill ${pIdx === stage.flowPills.length - 1 ? 'flow-win' : ''}`}
                   >
                     {pill}
                   </span>
-                  {idx < stage.flowPills.length - 1 && (
+                  {pIdx < stage.flowPills.length - 1 && (
                     <span className="flow-arrow">→</span>
                   )}
                 </React.Fragment>
@@ -62,6 +77,19 @@ export default function WhoWeWorkWith() {
               {stage.ctaText}
             </a>
           </article>
+        ))}
+      </div>
+
+      {/* Mobile Dots Indicator */}
+      <div className="mobile-dots-indicator" aria-label="Stages pagination">
+        {stages.map((_, i) => (
+          <button
+            type="button"
+            className={`dot ${activeIndex === i ? 'active' : ''}`}
+            key={i}
+            onClick={() => scrollToCard(i)}
+            aria-label={`Jump to stage ${i + 1}`}
+          />
         ))}
       </div>
 
