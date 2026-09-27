@@ -37,7 +37,7 @@ export default function WhoWeWorkWith() {
       </div>
 
       {/* 3 Stage Cards Grid / Track */}
-      <div className="stages-grid" ref={railRef}>
+      <div className="stages-grid" ref={railRef} data-lenis-prevent="true">
         {stages.map((stage, idx) => (
           <article
             className={`stage-card ${stage.isFeatured ? 'featured-stage' : ''} ${activeIndex === idx ? 'in-view' : ''}`}

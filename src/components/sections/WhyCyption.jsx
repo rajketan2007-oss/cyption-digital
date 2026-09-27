@@ -37,7 +37,7 @@ export default function WhyCyption() {
       </div>
 
       {/* 5 Differentiators Cards Grid / Track */}
-      <div className="differentiators-grid" ref={railRef}>
+      <div className="differentiators-grid" ref={railRef} data-lenis-prevent="true">
         {differentiators.map((diff, idx) => (
           <div className={`diff-card ${activeIndex === idx ? 'in-view' : ''}`} key={diff.num}>
             <span className="diff-num">{diff.num}</span>

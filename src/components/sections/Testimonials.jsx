@@ -52,7 +52,7 @@ export default function Testimonials() {
       </div>
 
       {/* Testimonial Cards Grid / Track */}
-      <div className="testi-grid" ref={railRef}>
+      <div className="testi-grid" ref={railRef} data-lenis-prevent="true">
         {testimonials.map((t, idx) => (
           <article className={`testi-card ${activeIndex === idx ? 'in-view' : ''}`} key={t.author}>
             <div className="testi-stars">★★★★★</div>

@@ -37,7 +37,7 @@ export default function Services() {
       </div>
 
       {/* 5 Columns Grid / Track */}
-      <div className="services-columns-grid" ref={railRef}>
+      <div className="services-columns-grid" ref={railRef} data-lenis-prevent="true">
         {servicePillars.map((pillar) => (
           <div className="service-col" key={pillar.tag}>
             <div className="col-head">

@@ -75,7 +75,7 @@ export default function WhatWeDo() {
           </div>
         </div>
 
-        <div className="feature-rail" id="capabilities-rail" ref={railRef}>
+        <div className="feature-rail" id="capabilities-rail" ref={railRef} data-lenis-prevent="true">
           {capabilities.map((c, i) => (
             <article
               className={`feature-card ${c.theme} ${activeIndex === i ? 'in-view' : ''}`}

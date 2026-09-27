@@ -44,7 +44,7 @@ export default function Problem() {
       </div>
 
       {/* 5 Problem Cards Grid / Track */}
-      <div className="problem-grid" ref={railRef}>
+      <div className="problem-grid" ref={railRef} data-lenis-prevent="true">
         {problems.map((prob, idx) => (
           <article className={`problem-card ${activeIndex === idx ? 'in-view' : ''}`} key={prob.num}>
             <div className="problem-header">

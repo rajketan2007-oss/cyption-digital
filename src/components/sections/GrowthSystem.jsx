@@ -68,7 +68,7 @@ export default function GrowthSystem() {
       </div>
 
       {/* 6 Steps Interactive Cards Grid / Track */}
-      <div className="system-cards-grid" ref={railRef}>
+      <div className="system-cards-grid" ref={railRef} data-lenis-prevent="true">
         {growthSteps.map((s, idx) => (
           <article
             className={`system-card ${activeStep === idx ? 'active' : ''}`}

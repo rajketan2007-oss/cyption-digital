@@ -44,7 +44,8 @@ export default function App() {
       lenis = new Lenis({
         lerp: isTouchDevice ? 0.12 : window.innerWidth < 1024 ? 0.1 : 0.085,
         smoothWheel: true,
-        syncTouch: false
+        syncTouch: false,
+        prevent: (node) => !!node.closest?.('[data-lenis-prevent]'),
       });
 
       lenis.on('scroll', ScrollTrigger.update);

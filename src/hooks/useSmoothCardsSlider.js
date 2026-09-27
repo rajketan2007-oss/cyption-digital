@@ -14,10 +14,16 @@ export function useSmoothCardsSlider({
 } = {}) {
   const railRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const activeIndexRef = useRef(initialIndex);
+  activeIndexRef.current = activeIndex;
+
   const isDraggingRef = useRef(false);
+  const isTouchRef = useRef(false);
   const startXRef = useRef(0);
+  const startYRef = useRef(0);
   const scrollLeftRef = useRef(0);
   const hasMovedRef = useRef(false);
+  const isHorizontalScrollRef = useRef(null);
   const lastXRef = useRef(0);
   const lastTimeRef = useRef(0);
   const velocityRef = useRef(0);
@@ -55,12 +61,12 @@ export function useSmoothCardsSlider({
   }, [cardSelector, onIndexChange]);
 
   const scrollPrev = useCallback(() => {
-    scrollToCard(activeIndex - 1);
-  }, [activeIndex, scrollToCard]);
+    scrollToCard(activeIndexRef.current - 1);
+  }, [scrollToCard]);
 
   const scrollNext = useCallback(() => {
-    scrollToCard(activeIndex + 1);
-  }, [activeIndex, scrollToCard]);
+    scrollToCard(activeIndexRef.current + 1);
+  }, [scrollToCard]);
 
   // Update active index based on scroll position (high performance, no layout reflow)
   const handleScroll = useCallback(() => {
@@ -104,7 +110,6 @@ export function useSmoothCardsSlider({
     // Passive scroll listener for silky 120fps tracking
     rail.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Desktop mouse drag implementation
     if (!enableMouseDrag) {
       return () => {
         rail.removeEventListener('scroll', handleScroll);
@@ -112,11 +117,75 @@ export function useSmoothCardsSlider({
       };
     }
 
-    const onMouseDown = (e) => {
-      // Don't drag if clicking buttons, links, or form controls
+    // --- Touch Gesture Handling for Mobile Phones ---
+    const onTouchStart = (e) => {
       if (e.target.closest('button, a, input, textarea, select')) return;
-
+      const touch = e.touches[0];
       isDraggingRef.current = true;
+      isTouchRef.current = true;
+      hasMovedRef.current = false;
+      isHorizontalScrollRef.current = null;
+      startXRef.current = touch.pageX;
+      startYRef.current = touch.pageY;
+      scrollLeftRef.current = rail.scrollLeft;
+      lastXRef.current = touch.pageX;
+      lastTimeRef.current = Date.now();
+      velocityRef.current = 0;
+    };
+
+    const onTouchMove = (e) => {
+      if (!isDraggingRef.current || !isTouchRef.current) return;
+      const touch = e.touches[0];
+      const dx = touch.pageX - startXRef.current;
+      const dy = touch.pageY - startYRef.current;
+
+      // Determine directional intent on initial movement
+      if (isHorizontalScrollRef.current === null) {
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+          isHorizontalScrollRef.current = Math.abs(dx) >= Math.abs(dy);
+        }
+      }
+
+      // If user is scrolling vertically down the page, don't intervene
+      if (isHorizontalScrollRef.current === false) return;
+
+      if (isHorizontalScrollRef.current === true) {
+        hasMovedRef.current = true;
+        const now = Date.now();
+        const dt = now - lastTimeRef.current;
+        if (dt > 0) {
+          velocityRef.current = (touch.pageX - lastXRef.current) / dt;
+        }
+        lastXRef.current = touch.pageX;
+        lastTimeRef.current = now;
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (!isDraggingRef.current || !isTouchRef.current) return;
+      isDraggingRef.current = false;
+      isTouchRef.current = false;
+
+      if (isHorizontalScrollRef.current === true && hasMovedRef.current) {
+        const vel = velocityRef.current;
+        const currentIdx = activeIndexRef.current;
+        const total = totalItems || rail.querySelectorAll(cardSelector).length;
+
+        // If flicked with velocity, smoothly glide to next or previous card
+        if (vel < -0.25) {
+          scrollToCard(Math.min(total - 1, currentIdx + 1));
+        } else if (vel > 0.25) {
+          scrollToCard(Math.max(0, currentIdx - 1));
+        }
+      }
+      isHorizontalScrollRef.current = null;
+    };
+
+    // --- Desktop Mouse Drag Handling ---
+    const onMouseDown = (e) => {
+      if (e.target.closest('button, a, input, textarea, select')) return;
+      isDraggingRef.current = true;
+      isTouchRef.current = false;
       hasMovedRef.current = false;
       startXRef.current = e.pageX;
       scrollLeftRef.current = rail.scrollLeft;
@@ -124,16 +193,15 @@ export function useSmoothCardsSlider({
       lastTimeRef.current = Date.now();
       velocityRef.current = 0;
       rail.style.cursor = 'grabbing';
-      rail.style.scrollBehavior = 'auto'; // Instant response during direct drag
       rail.style.userSelect = 'none';
     };
 
     const onMouseMove = (e) => {
-      if (!isDraggingRef.current) return;
+      if (!isDraggingRef.current || isTouchRef.current) return;
       const x = e.pageX;
       const diff = x - startXRef.current;
 
-      if (Math.abs(diff) > 5) {
+      if (Math.abs(diff) > 4) {
         hasMovedRef.current = true;
       }
 
@@ -149,29 +217,38 @@ export function useSmoothCardsSlider({
     };
 
     const onMouseUp = () => {
-      if (!isDraggingRef.current) return;
+      if (!isDraggingRef.current || isTouchRef.current) return;
       isDraggingRef.current = false;
       rail.style.cursor = 'grab';
-      rail.style.scrollBehavior = 'smooth';
       rail.style.removeProperty('user-select');
 
-      // Apply kinetic glide if dragged with velocity
-      if (Math.abs(velocityRef.current) > 0.25) {
-        const momentum = velocityRef.current * 280;
+      const vel = velocityRef.current;
+      const currentIdx = activeIndexRef.current;
+      const total = totalItems || rail.querySelectorAll(cardSelector).length;
+
+      if (vel < -0.3) {
+        scrollToCard(Math.min(total - 1, currentIdx + 1));
+      } else if (vel > 0.3) {
+        scrollToCard(Math.max(0, currentIdx - 1));
+      } else if (Math.abs(vel) > 0.15) {
         rail.scrollBy({
-          left: -momentum,
+          left: -vel * 200,
           behavior: 'smooth',
         });
       }
     };
 
     const onClickCapture = (e) => {
-      // Prevent accidental clicks on child links if user was dragging
       if (hasMovedRef.current) {
         e.stopPropagation();
         e.preventDefault();
       }
     };
+
+    rail.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
     rail.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
@@ -180,13 +257,17 @@ export function useSmoothCardsSlider({
 
     return () => {
       rail.removeEventListener('scroll', handleScroll);
+      rail.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
       rail.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
       rail.removeEventListener('click', onClickCapture, true);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [enableMouseDrag, handleScroll]);
+  }, [enableMouseDrag, handleScroll, scrollToCard, totalItems, cardSelector]);
 
   return {
     railRef,
