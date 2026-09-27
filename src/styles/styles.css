@@ -3709,7 +3709,8 @@ footer {
   .stages-grid,
   .testi-grid,
   .problem-grid,
-  .differentiators-grid {
+  .differentiators-grid,
+  .feature-rail {
     display: flex !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
@@ -3719,10 +3720,12 @@ footer {
     scrollbar-width: none !important;
     touch-action: pan-x pan-y !important;
     gap: 16px !important;
-    padding: 10px 5vw 24px !important;
+    padding: 10px 5vw 26px !important;
     margin-left: -5vw !important;
     margin-right: -5vw !important;
     width: calc(100% + 10vw) !important;
+    contain: layout style;
+    will-change: scroll-position;
     cursor: grab;
   }
 
@@ -3731,64 +3734,49 @@ footer {
   .stages-grid::-webkit-scrollbar,
   .testi-grid::-webkit-scrollbar,
   .problem-grid::-webkit-scrollbar,
-  .differentiators-grid::-webkit-scrollbar {
+  .differentiators-grid::-webkit-scrollbar,
+  .feature-rail::-webkit-scrollbar {
     display: none !important;
   }
 
-  /* Cards in slider tracks */
+  /* Cards in slider tracks - Hardware Accelerated with zero scale reflow during swipe */
   .service-col,
   .system-card,
   .stage-card,
   .testi-card,
   .problem-card,
-  .diff-card {
+  .diff-card,
+  .feature-card {
     flex: 0 0 min(290px, 78vw) !important;
     scroll-snap-align: center !important;
     scroll-snap-stop: normal !important;
     margin: 0 !important;
-    opacity: 0.72;
-    transform: scale(0.96);
+    opacity: 1 !important;
+    transform: translateZ(0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
     user-select: none;
     -webkit-user-select: none;
-    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
-                border-color 0.3s ease,
-                box-shadow 0.35s ease,
-                opacity 0.35s ease !important;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
+    contain: layout paint;
+  }
+
+  .feature-card {
+    min-height: 420px !important;
+    padding: 24px !important;
   }
 
   .service-col.in-view,
-  .service-col:hover,
   .system-card.in-view,
   .system-card.active,
   .stage-card.in-view,
   .stage-card.featured-stage,
   .testi-card.in-view,
   .problem-card.in-view,
-  .diff-card.in-view {
-    opacity: 1 !important;
-    transform: scale(1) !important;
-    border-color: var(--lime) !important;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 20px rgba(216, 255, 62, 0.16) !important;
-  }
-
-  .feature-rail {
-    gap: 14px !important;
-    padding: 10px 5vw 26px !important;
-  }
-
-  .feature-card {
-    flex: 0 0 min(290px, 78vw) !important;
-    min-height: 420px !important;
-    padding: 24px !important;
-    opacity: 0.72;
-    transform: scale(0.96);
-  }
-
+  .diff-card.in-view,
   .feature-card.in-view {
-    opacity: 1;
-    transform: scale(1);
-    border-color: var(--lime);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(216, 255, 62, 0.2);
+    border-color: var(--lime) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(216, 255, 62, 0.12) !important;
   }
 
   .rail-top-bar {

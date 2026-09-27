@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 
 /**
  * useSmoothCardsSlider
- * Provides ultra-smooth, hardware-accelerated card sliding for mobile touch
+ * Ultra-smooth, zero-lag card sliding for mobile touch (100% native compositor momentum)
  * and desktop mouse dragging with kinetic momentum, snap alignment, and dot pagination.
  */
 export function useSmoothCardsSlider({
@@ -17,19 +17,16 @@ export function useSmoothCardsSlider({
   const activeIndexRef = useRef(initialIndex);
   activeIndexRef.current = activeIndex;
 
-  const isDraggingRef = useRef(false);
-  const isTouchRef = useRef(false);
+  const isMouseDraggingRef = useRef(false);
   const startXRef = useRef(0);
-  const startYRef = useRef(0);
   const scrollLeftRef = useRef(0);
   const hasMovedRef = useRef(false);
-  const isHorizontalScrollRef = useRef(null);
   const lastXRef = useRef(0);
   const lastTimeRef = useRef(0);
   const velocityRef = useRef(0);
   const animFrameRef = useRef(null);
 
-  // Smoothly scroll to a specific card index
+  // Smoothly scroll to a specific card index (used by arrow buttons & dots)
   const scrollToCard = useCallback((index) => {
     const rail = railRef.current;
     if (!rail) return;
@@ -46,7 +43,6 @@ export function useSmoothCardsSlider({
     const cardWidth = targetCard.offsetWidth;
     const cardOffset = targetCard.offsetLeft;
 
-    // On mobile, center the card; on desktop, align with container padding
     const targetScrollLeft = isMobile
       ? cardOffset - (railWidth - cardWidth) / 2
       : cardOffset - 32;
@@ -68,11 +64,12 @@ export function useSmoothCardsSlider({
     scrollToCard(activeIndexRef.current + 1);
   }, [scrollToCard]);
 
-  // Update active index based on scroll position (high performance, no layout reflow)
+  // Ultra-lightweight scroll tracker: only updates state when active card actually changes
   const handleScroll = useCallback(() => {
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (animFrameRef.current) return;
 
     animFrameRef.current = requestAnimationFrame(() => {
+      animFrameRef.current = null;
       const rail = railRef.current;
       if (!rail) return;
 
@@ -93,13 +90,11 @@ export function useSmoothCardsSlider({
         }
       }
 
-      setActiveIndex((prev) => {
-        if (prev !== closest) {
-          if (onIndexChange) onIndexChange(closest);
-          return closest;
-        }
-        return prev;
-      });
+      if (closest !== activeIndexRef.current) {
+        activeIndexRef.current = closest;
+        setActiveIndex(closest);
+        if (onIndexChange) onIndexChange(closest);
+      }
     });
   }, [cardSelector, onIndexChange]);
 
@@ -107,7 +102,7 @@ export function useSmoothCardsSlider({
     const rail = railRef.current;
     if (!rail) return;
 
-    // Passive scroll listener for silky 120fps tracking
+    // Passive scroll listener for zero-latency tracking
     rail.addEventListener('scroll', handleScroll, { passive: true });
 
     if (!enableMouseDrag) {
@@ -117,75 +112,11 @@ export function useSmoothCardsSlider({
       };
     }
 
-    // --- Touch Gesture Handling for Mobile Phones ---
-    const onTouchStart = (e) => {
-      if (e.target.closest('button, a, input, textarea, select')) return;
-      const touch = e.touches[0];
-      isDraggingRef.current = true;
-      isTouchRef.current = true;
-      hasMovedRef.current = false;
-      isHorizontalScrollRef.current = null;
-      startXRef.current = touch.pageX;
-      startYRef.current = touch.pageY;
-      scrollLeftRef.current = rail.scrollLeft;
-      lastXRef.current = touch.pageX;
-      lastTimeRef.current = Date.now();
-      velocityRef.current = 0;
-    };
-
-    const onTouchMove = (e) => {
-      if (!isDraggingRef.current || !isTouchRef.current) return;
-      const touch = e.touches[0];
-      const dx = touch.pageX - startXRef.current;
-      const dy = touch.pageY - startYRef.current;
-
-      // Determine directional intent on initial movement
-      if (isHorizontalScrollRef.current === null) {
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-          isHorizontalScrollRef.current = Math.abs(dx) >= Math.abs(dy);
-        }
-      }
-
-      // If user is scrolling vertically down the page, don't intervene
-      if (isHorizontalScrollRef.current === false) return;
-
-      if (isHorizontalScrollRef.current === true) {
-        hasMovedRef.current = true;
-        const now = Date.now();
-        const dt = now - lastTimeRef.current;
-        if (dt > 0) {
-          velocityRef.current = (touch.pageX - lastXRef.current) / dt;
-        }
-        lastXRef.current = touch.pageX;
-        lastTimeRef.current = now;
-      }
-    };
-
-    const onTouchEnd = () => {
-      if (!isDraggingRef.current || !isTouchRef.current) return;
-      isDraggingRef.current = false;
-      isTouchRef.current = false;
-
-      if (isHorizontalScrollRef.current === true && hasMovedRef.current) {
-        const vel = velocityRef.current;
-        const currentIdx = activeIndexRef.current;
-        const total = totalItems || rail.querySelectorAll(cardSelector).length;
-
-        // If flicked with velocity, smoothly glide to next or previous card
-        if (vel < -0.25) {
-          scrollToCard(Math.min(total - 1, currentIdx + 1));
-        } else if (vel > 0.25) {
-          scrollToCard(Math.max(0, currentIdx - 1));
-        }
-      }
-      isHorizontalScrollRef.current = null;
-    };
-
-    // --- Desktop Mouse Drag Handling ---
+    // --- Desktop Mouse Drag Handling Only (Leaves touch 100% native & lag-free) ---
     const onMouseDown = (e) => {
+      // Don't drag if clicking buttons, links, or form controls
       if (e.target.closest('button, a, input, textarea, select')) return;
-      isDraggingRef.current = true;
-      isTouchRef.current = false;
+      isMouseDraggingRef.current = true;
       hasMovedRef.current = false;
       startXRef.current = e.pageX;
       scrollLeftRef.current = rail.scrollLeft;
@@ -197,7 +128,7 @@ export function useSmoothCardsSlider({
     };
 
     const onMouseMove = (e) => {
-      if (!isDraggingRef.current || isTouchRef.current) return;
+      if (!isMouseDraggingRef.current) return;
       const x = e.pageX;
       const diff = x - startXRef.current;
 
@@ -217,8 +148,8 @@ export function useSmoothCardsSlider({
     };
 
     const onMouseUp = () => {
-      if (!isDraggingRef.current || isTouchRef.current) return;
-      isDraggingRef.current = false;
+      if (!isMouseDraggingRef.current) return;
+      isMouseDraggingRef.current = false;
       rail.style.cursor = 'grab';
       rail.style.removeProperty('user-select');
 
@@ -245,11 +176,6 @@ export function useSmoothCardsSlider({
       }
     };
 
-    rail.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchmove', onTouchMove, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', onTouchEnd, { passive: true });
-
     rail.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
@@ -257,10 +183,6 @@ export function useSmoothCardsSlider({
 
     return () => {
       rail.removeEventListener('scroll', handleScroll);
-      rail.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
-      window.removeEventListener('touchcancel', onTouchEnd);
       rail.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
